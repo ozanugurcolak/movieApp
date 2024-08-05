@@ -1,0 +1,45 @@
+﻿@model AdminGenresViewModel
+<h1>Tür Listesi</h1>
+<div class="row">
+    <!-- Form Column -->
+    <div class="col-md-4">
+        <form asp-controller="Admin" asp-action="GenreCreate" method="post">
+            <div class="mb-3">
+                <label asp-for="Name"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <button type="submit" class="btn btn-primary">Kaydet</button>
+        </form>
+    </div>
+    <!-- Table Column -->
+    <div class="col-md-8">
+        <table class="table table-striped table-hover table-bordered">
+            <thead>
+                <tr>
+                    <th style="width:30px;">#</th>
+                    <th>Name</th>
+                    <th style="width:70px;">Sayı</th>
+                    <th style="width:160px;"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var genre in Model.Genres)
+                {
+                    <tr>
+                        <td>@genre.GenreId</td>
+                        <td>@genre.Name</td>
+                        <td>@genre.Count</td>
+                        <td>
+                            <a href="/admin/genreupdate/@genre.GenreId" class="btn btn-warning btn-sm">Update</a>
+                            <form action="/admin/genredelete" method="post" style="display: inline">
+                                <input type="hidden" name="genreId" value="@genre.GenreId"></input>
+                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
