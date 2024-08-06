@@ -65,27 +65,18 @@ namespace movieApp.web.Data
 					ImageUrl = "seven.jpg",
 					Genres = new List<Genre>() {genres[1],genres[2] } },
 			};
-			var users = new List<User>() 
-			{
-				new User() {UserName="usera",Email="usera@gmail.com",Password="1234",ImageUrl="person1.jpg"},
-				new User() {UserName="userb",Email="userb@gmail.com",Password="1234",ImageUrl="person2.jpg"},
-				new  User() {UserName="userc",Email="userc@gmail.com",Password="1234",ImageUrl="person3.jpg"},
-				new User() {UserName="userd",Email="userd@gmail.com",Password="1234",ImageUrl="person4.jpg"}
-
-			};
+			
 			var people = new List<Person>()
 			{
 				new Person()
 				{
 					Name = "Personel1",
-					Biography = "tanıtım1",
-					User = users[0]
+				
 				},
 				new Person()
 				{
 					Name = "Personel2",
-					Biography = "tanıtım",
-					User= users[1]
+					
 				}
 			};
 			var crews = new List<Crew>()
@@ -95,8 +86,8 @@ namespace movieApp.web.Data
 			};
 			var casts = new List<Cast>()
 			{
-				new Cast() {Movie=movies[0],Person=people[0],Name="Oyuncu 1",Character="Karakter 1"},
-				new Cast() {Movie=movies[0],Person=people[1],Name="Oyuncu 2",Character="Karakter 2"}
+				new Cast() {Movie=movies[0],Person=people[0],Name="Oyuncu 1"},
+				new Cast() {Movie=movies[0],Person=people[1],Name="Oyuncu 2"}
 			};
 
 
@@ -110,10 +101,7 @@ namespace movieApp.web.Data
 				{
 					context.Movies.AddRange(movies);
 				}
-				if (context.Users.Count() == 0)
-				{
-					context.Users.AddRange(users);
-				} 
+				
 				if (context.People.Count() == 0)
 				{
 					context.People.AddRange(people);

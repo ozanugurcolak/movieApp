@@ -1,34 +1,46 @@
 ﻿@model AdminCreateMovieModel
 
-<h1> Film Ekle </h1>
+<h1>Film Ekle</h1>
 <hr />
 <form method="post" asp-controller="Admin" asp-action="MovieCreate" enctype="multipart/form-data">
 
 	<div class="row">
 		<div class="col-md-8">
 			<div asp-validation-summary="All"></div>
+
 			<div class="mb-3">
 				<label asp-for="Title"></label>
 				<input asp-for="Title" class="form-control" />
 				<span asp-validation-for="Title" class="text-danger"></span>
-
 			</div>
+
 			<div class="mb-3">
 				<label asp-for="Description"></label>
 				<textarea asp-for="Description" class="form-control"></textarea>
 				<span asp-validation-for="Description" class="text-danger"></span>
-
 			</div>
 
 			<div class="mb-3">
 				<input type="file" name="file" class="form-control" />
-
 			</div>
 
-			<button type="submit" class="btn btn-primary">Düzenle</button>
+			<!-- Yönetmen ve oyuncu bilgilerini ekleyin -->
+			<div class="mb-3">
+				<label asp-for="DirectorName"></label>
+				<input asp-for="DirectorName" class="form-control" />
+				<span asp-validation-for="DirectorName" class="text-danger"></span>
+			</div>
+
+			<div class="mb-3">
+				<label asp-for="ActorNames"></label>
+				<input asp-for="ActorNames" class="form-control" />
+				<span asp-validation-for="ActorNames" class="text-danger"></span>
+				<small class="form-text text-muted">Oyuncuları virgülle ayırarak girin (örn. John Doe, Jane Smith)</small>
+			</div>
+
+			<button type="submit" class="btn btn-primary">Ekle</button>
 		</div>
 		<div class="col-md-4">
-
 			@foreach (var item in (List<Genre>)ViewBag.Genres)
 			{
 				<div class="form-check">
@@ -44,20 +56,15 @@
 				</div>
 			}
 
-			<span asp asp-validation-for="GenreIds" class="text-danger"></span>
-
-
-
+			<span asp-validation-for="GenreIds" class="text-danger"></span>
 		</div>
 	</div>
 </form>
+
 @section scripts
 {
 	<script src="https://cdn.ckeditor.com/4.22.0/basic/ckeditor.js"></script>
 	<script>
 		CKEDITOR.replace('Description');
 	</script>
-
 }
-
-

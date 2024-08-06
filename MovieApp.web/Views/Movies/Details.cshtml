@@ -1,24 +1,79 @@
-﻿@model Movie
+﻿    @model movieApp.web.Models.AdminMovieViewModel
 
-<div class="card">
-	<div class="row">
-		<div class="col-md-3">
-			<img src="/img/@Model.ImageUrl" class="card-img" />
-		</div>
-		<div class="col-md-9">
-			<div class="card-body">
-				<h5 class="card-title">@Model.Title</h5>
-				<p class="card-text">@Html.Raw(Model.Description)</p>
-				@* @if (model.players!=null)
-				{
-				<p>
-					<ul>
-						@foreach (var item in model.players)
-						{
-							<li>@item</li>
-						}
-					</ul>
-			</div>
-		</div>
-	</div>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Film Detayları</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .card {
+            width: 100%;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .card-img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .card-text {
+            font-size: 1.2rem;
+            line-height: 1.6;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+            ul li {
+                margin-bottom: 5px;
+            }
+    </style>
+</head>
+<body>
+    <div class="card mb-3">
+        <div class="row no-gutters">
+            <div class="col-md-4">
+                <img src="/img/@Model.Movie.ImageUrl" class="card-img" alt="@Model.Movie.Title">
+            </div>
+            <div class="col-md-8">
+                <div class="card-body">
+                    <h5 class="card-title">@Model.Movie.Title</h5>
+                    <p class="card-text">@Html.Raw(Model.Movie.Description)</p>
+                    <h6>Oyuncular:</h6>
+                    <ul>
+                        @foreach (var cast in Model.Casts)
+                        {
+                            <li>@cast.Name </li>
+                        }
+                    </ul>
+                    <h6>Yönetmenler:</h6>
+                    <ul>
+                        @foreach (var crew in Model.Crews)
+                        {
+                            <li>@crew.Person.Name</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

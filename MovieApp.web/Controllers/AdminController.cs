@@ -23,67 +23,129 @@ namespace movieApp.web.Controllers
 		{
 			return View();
 		}
-		public IActionResult MovieUpdate(int? id)
-		{
-			if (id == null)
-			{
-				return NotFound();
-			}
-			var entity = _context.Movies.Select(m => new AdminEditMovieViewModel
-			{
-				MovieId = m.MovieId,
-				Title = m.Title,
-				Description = m.Description,
-				ImageUrl = m.ImageUrl,
-				GenreIds = m.Genres.Select(i=>i.GenreId).ToArray()
-			}).FirstOrDefault(m => m.MovieId == id);
+        public IActionResult MovieUpdate(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
 
-			ViewBag.Genres = _context.Genres.ToList();
+            var entity = _context.Movies
+                .Include(m => m.Genres)
+                .Include(m => m.Casts)
+                .ThenInclude(c => c.Person) // Person nesnelerini de dahil ediyoruz
+                .Include(m => m.Crews)
+                .ThenInclude(c => c.Person) // Person nesnelerini de dahil ediyoruz
+                .FirstOrDefault(m => m.MovieId == id);
 
-			if (entity == null)
-			{
-				return NotFound();
-			}
-			return View(entity);
-		}
-		[HttpPost]
-		public async Task<IActionResult> MovieUpdate(AdminEditMovieViewModel model, int[] genreIds,IFormFile file)
-		{
-			if(ModelState.IsValid)
-			{ 
-			var entity = _context.Movies.Include("Genres").FirstOrDefault(m => m.MovieId == model.MovieId);
+            if (entity == null)
+            {
+                return NotFound();
+            }
 
-			if (entity == null)
-			{
-				return NotFound();
-			}
+            var model = new AdminEditMovieViewModel
+            {
+                MovieId = entity.MovieId,
+                Title = entity.Title,
+                Description = entity.Description,
+                ImageUrl = entity.ImageUrl,
+                GenreIds = entity.Genres?.Select(i => i.GenreId).ToArray() ?? new int[0], // Null check
+                Genres = _context.Genres.ToList(),
+                Casts = entity.Casts?.ToList() ?? new List<Cast>(), // Null check
+                Crews = entity.Crews?.ToList() ?? new List<Crew>(), // Null check
+                DirectorName = entity.Crews?.FirstOrDefault(c => c.Job == "Director")?.Person?.Name, // Null check
+                ActorNames = entity.Casts != null ? string.Join(", ", entity.Casts.Where(c => c.Person != null).Select(c => c.Person.Name)) : string.Empty // Null check
+            };
 
-			entity.Title = model.Title;
-			entity.Description = model.Description;
-			  
-			if (file != null)
-			{
-				var extension = Path.GetExtension(file.FileName);
-				var fileName = string.Format($"{Guid.NewGuid()}{extension}");
-				var path = Path.Combine(Directory.GetCurrentDirectory(),"wwwroot\\img",fileName);
-				entity.ImageUrl = fileName;
+            ViewBag.Genres = _context.Genres.ToList();
 
-				using (var stream=new FileStream(path,FileMode.Create))
-				{
-					await file.CopyToAsync(stream);
-				}
-			}
+            return View(model);
+        }
 
-			entity.Genres = genreIds.Select(id => _context.Genres.FirstOrDefault(i => i.GenreId == id)).ToList();
 
-			_context.SaveChanges();
+        [HttpPost]
+        public async Task<IActionResult> MovieUpdate(AdminEditMovieViewModel model, int[] genreIds, IFormFile file)
+        {
+            if (ModelState.IsValid)
+            {
+                var entity = await _context.Movies
+                    .Include(m => m.Genres)
+                    .Include(m => m.Crews)
+                    .Include(m => m.Casts)
+                    .FirstOrDefaultAsync(m => m.MovieId == model.MovieId);
 
-			return RedirectToAction("MovieList");
-			}
-			ViewBag.Genres = _context.Genres.ToList();
-			return View(model);
-		}
-		public IActionResult MovieList()
+                if (entity == null)
+                {
+                    return NotFound();
+                }
+
+                entity.Title = model.Title;
+                entity.Description = model.Description;
+
+                if (file != null)
+                {
+                    var extension = Path.GetExtension(file.FileName);
+                    var fileName = $"{Guid.NewGuid()}{extension}";
+                    var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\img", fileName);
+                    entity.ImageUrl = fileName;
+
+                    using (var stream = new FileStream(path, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+                }
+
+                entity.Genres = genreIds.Select(id => _context.Genres.FirstOrDefault(i => i.GenreId == id)).ToList();
+
+                // Yönetmen ve oyuncuları güncelle
+                if (!string.IsNullOrEmpty(model.DirectorName))
+                {
+                    var director = _context.People.FirstOrDefault(p => p.Name == model.DirectorName);
+                    if (director == null)
+                    {
+                        director = new Person { Name = model.DirectorName };
+                        _context.People.Add(director);
+                        await _context.SaveChangesAsync();
+                    }
+                    var crew = entity.Crews.FirstOrDefault(c => c.Job == "Director");
+                    if (crew == null)
+                    {
+                        crew = new Crew { MovieId = entity.MovieId, PersonId = director.PersonId, Job = "Director" };
+                        _context.Crews.Add(crew);
+                    }
+                    else
+                    {
+                        crew.PersonId = director.PersonId;
+                    }
+                }
+
+                entity.Casts.Clear();
+                if (!string.IsNullOrEmpty(model.ActorNames))
+                {
+                    var actorNames = model.ActorNames.Split(',').Select(name => name.Trim()).ToList();
+                    foreach (var actorName in actorNames)
+                    {
+                        var actor = _context.People.FirstOrDefault(p => p.Name == actorName);
+                        if (actor == null)
+                        {
+                            actor = new Person { Name = actorName };
+                            _context.People.Add(actor);
+                            await _context.SaveChangesAsync();
+                        }
+                        entity.Casts.Add(new Cast { MovieId = entity.MovieId, PersonId = actor.PersonId, Name = actorName });
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+                return RedirectToAction("MovieList");
+            }
+
+            ViewBag.Genres = _context.Genres.ToList();
+            return View(model);
+        }
+
+
+        public IActionResult MovieList()
 		{
 			return View(new AdminMoviesViewModel
 			{
@@ -227,9 +289,8 @@ namespace movieApp.web.Controllers
 		//}
 
 		[HttpPost]
-		public async Task<IActionResult> MovieCreate(AdminCreateMovieModel model,IFormFile file)
+		public async Task<IActionResult> MovieCreate(AdminCreateMovieModel model, IFormFile file)
 		{
-			
 			if (ModelState.IsValid)
 			{
 				var entity = new Movie
@@ -252,12 +313,40 @@ namespace movieApp.web.Controllers
 					}
 				}
 
+				// Movie ekle
+				_context.Movies.Add(entity);
+				await _context.SaveChangesAsync();
+
+				// Genre'leri ekle
 				foreach (var id in model.GenreIds)
 				{
 					entity.Genres.Add(_context.Genres.FirstOrDefault(i => i.GenreId == id));
 				}
 
-				_context.Movies.Add(entity);
+				// Yönetmen ekle
+				if (!string.IsNullOrEmpty(model.DirectorName))
+				{
+					var director = new Person { Name = model.DirectorName };
+					_context.People.Add(director);
+					await _context.SaveChangesAsync();
+					var crew = new Crew { MovieId = entity.MovieId, PersonId = director.PersonId, Job = "Director" };
+					_context.Crews.Add(crew);
+				}
+
+				// Oyuncuları ekle
+				if (!string.IsNullOrEmpty(model.ActorNames))
+				{
+					var actorNames = model.ActorNames.Split(',').Select(name => name.Trim()).ToList();
+					foreach (var actorName in actorNames)
+					{
+						var actor = new Person { Name = actorName };
+						_context.People.Add(actor);
+						await _context.SaveChangesAsync();
+						var cast = new Cast { MovieId = entity.MovieId, PersonId = actor.PersonId, Name = actorName };
+						_context.Casts.Add(cast);
+					}
+				}
+
 				await _context.SaveChangesAsync();
 				return RedirectToAction("MovieList", "Admin");
 			}
@@ -265,6 +354,8 @@ namespace movieApp.web.Controllers
 			ViewBag.Genres = _context.Genres.ToList();
 			return View(model);
 		}
+
+
 
 
 	}

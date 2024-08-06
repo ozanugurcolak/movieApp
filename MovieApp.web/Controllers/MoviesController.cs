@@ -9,6 +9,7 @@ using movieApp.web.Models;
 using SQLitePCL;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace movieApp.web.Controllers
 {
@@ -54,11 +55,37 @@ namespace movieApp.web.Controllers
             return View("movies",model);
         }
 
-        [HttpGet]
-        public IActionResult Details(int id) 
+        // [HttpGet]
+        // public IActionResult Details(int id) 
+        //{
+        //   return View(_context.Movies.Find(id));
+        //}
+
+        public async Task<IActionResult> Details(int id)
         {
-            return View(_context.Movies.Find(id));
+            var movie = await _context.Movies
+                .Include(m => m.Casts)
+                .ThenInclude(c => c.Person)
+                .Include(m => m.Crews)
+                .ThenInclude(c => c.Person)
+                .FirstOrDefaultAsync(m => m.MovieId == id);
+
+            if (movie == null)
+            {
+                return NotFound();
+            }
+
+            var viewModel = new AdminMovieViewModel
+            {
+                Movie = movie,
+                Casts = movie.Casts.ToList(),
+                Crews = movie.Crews.ToList()
+            };
+
+            return View(viewModel);
         }
-       
-	}
+
+
+
+    }
 }
