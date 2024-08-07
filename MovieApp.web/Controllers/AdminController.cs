@@ -1,4 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using movieApp.web.Data;
@@ -8,21 +12,63 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace movieApp.web.Controllers
 {
-	public class AdminController : Controller
-	{
-		private readonly MovieContext _context;
-		public AdminController(MovieContext context)
-		{
-			_context = context;
-		}
-		public IActionResult Index()
-		{
-			return View();
-		}
+    [Authorize(Roles = "Admin")]
+
+    public class AdminController : Controller
+    {
+        private readonly MovieContext _context;
+        public AdminController(MovieContext context)
+        {
+            _context = context;
+        }
+        [HttpGet]
+        public IActionResult Login()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Login(string username, string password)
+        {
+            var admin = _context.Admins.SingleOrDefault(a => a.AdminUsername == username && a.Password == password);
+            if (admin != null)
+            {
+                var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, admin.AdminUsername),
+                new Claim(ClaimTypes.Role, "Admin")
+            };
+
+                var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                var authProperties = new AuthenticationProperties
+                {
+                    IsPersistent = false 
+                };
+
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
+
+                return RedirectToAction("Index", "Home");
+            }
+
+            ModelState.AddModelError("", "Geçersiz kullanıcı adı veya şifre.");
+            return View();
+        }
+
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return RedirectToAction("Login", "Admin");
+        }
+        public IActionResult Index()
+        {
+            return View();
+        }
         public IActionResult MovieUpdate(int? id)
         {
             if (id == null)
@@ -61,6 +107,7 @@ namespace movieApp.web.Controllers
 
             return View(model);
         }
+
 
 
         [HttpPost]
@@ -146,217 +193,217 @@ namespace movieApp.web.Controllers
 
 
         public IActionResult MovieList()
-		{
-			return View(new AdminMoviesViewModel
-			{
-				Movies = _context.Movies
-				.Include(m => m.Genres)
-				.Select(m => new AdminMovieViewModel
-				{
-					MovieId = m.MovieId,
-					Title = m.Title,
-					ImageUrl = m.ImageUrl,
-					Genres = m.Genres.ToList()
-				})
-				.ToList()
-			});
+        {
+            return View(new AdminMoviesViewModel
+            {
+                Movies = _context.Movies
+                .Include(m => m.Genres)
+                .Select(m => new AdminMovieViewModel
+                {
+                    MovieId = m.MovieId,
+                    Title = m.Title,
+                    ImageUrl = m.ImageUrl,
+                    Genres = m.Genres.ToList()
+                })
+                .ToList()
+            });
 
-		}
+        }
 
-		public IActionResult GenreList()
-		{
-			return View(GetGenres());
-		}
+        public IActionResult GenreList()
+        {
+            return View(GetGenres());
+        }
 
-		private AdminGenresViewModel GetGenres()
-		{
-			return new AdminGenresViewModel
-			{
-				Genres = _context.Genres.Select(g=>new AdminGenreViewModel
-				{
-					GenreId = g.GenreId,
-					Name = g.Name,
-					Count=g.Movies.Count
-				}).ToList()
+        private AdminGenresViewModel GetGenres()
+        {
+            return new AdminGenresViewModel
+            {
+                Genres = _context.Genres.Select(g => new AdminGenreViewModel
+                {
+                    GenreId = g.GenreId,
+                    Name = g.Name,
+                    Count = g.Movies.Count
+                }).ToList()
 
-			};
-		}
-
-		[HttpPost ]
-		public IActionResult GenreCreate(AdminGenresViewModel model)
-		{
-			if(model.Name != null && model.Name.Length<3)
-			{
-				ModelState.AddModelError("Name", "tür adı minimum 3 karakterli olmalıdır");
-			}
-			if(ModelState.IsValid)
-			{
-				_context.Genres.Add(new Genre { Name = model.Name });
-				_context.SaveChanges();
-				return RedirectToAction("GenreList");
-			}
-			return View("GenreList", GetGenres());
-		}
-
-		public IActionResult GenreUpdate(int? id)
-		{
-			if (id == null)
-			{
-				return NotFound();
-			}
-			var entity = _context
-				.Genres
-				.Select(g=> new AdminGenreEditViewModel
-				{
-					GenreId=g.GenreId,
-					Name = g.Name,
-					Movies = g.Movies.Select(i=>new AdminMovieViewModel
-					{
-						MovieId = i.MovieId,
-						Title = i.Title,
-						ImageUrl = i.ImageUrl,
-
-					}).ToList()
-				}).FirstOrDefault(g => g.GenreId == id);
-			if (entity == null) 
-			{
-				return NotFound();
-			}
-			return View(entity);
-		}
-
-		[HttpPost]
-		public IActionResult GenreUpdate(AdminGenreEditViewModel model, int[] movieIds)
-		{
-			if(ModelState.IsValid)
-			{ 
-
-			var entity = _context.Genres.Include("Movies").FirstOrDefault(i=>i.GenreId==model.GenreId);
-			if (entity == null) { return NotFound(); }
-			entity.Name = model.Name;
-			foreach (var id in movieIds) { entity.Movies.Remove(entity.Movies.FirstOrDefault(m => m.MovieId == id)); }
-			_context.SaveChanges();
-			return RedirectToAction("GenreList");
-			}
-			return View(model);
+            };
         }
 
         [HttpPost]
-		public IActionResult GenreDelete (int genreId)
-		{
-			var entity = _context.Genres.Find(genreId);
-			if(entity!=null)
-			{
-				_context.Genres.Remove(entity);
-				_context.SaveChanges();
-			}
-			return RedirectToAction("GenreList");
-		}
-		[HttpPost]
-		public IActionResult MovieDelete(int movieId)
-		{
-			var entity = _context.Movies.Find(movieId);
-			if (entity != null)
-			{
-				_context.Movies.Remove(entity);
-				_context.SaveChanges();
-			}
-			return RedirectToAction("MovieList");
-		}
+        public IActionResult GenreCreate(AdminGenresViewModel model)
+        {
+            if (model.Name != null && model.Name.Length < 3)
+            {
+                ModelState.AddModelError("Name", "tür adı minimum 3 karakterli olmalıdır");
+            }
+            if (ModelState.IsValid)
+            {
+                _context.Genres.Add(new Genre { Name = model.Name });
+                _context.SaveChanges();
+                return RedirectToAction("GenreList");
+            }
+            return View("GenreList", GetGenres());
+        }
 
-		public IActionResult MovieCreate()
-		{
-			ViewBag.Genres = _context.Genres.ToList();
-			return View(new AdminCreateMovieModel()); 
-		}
+        public IActionResult GenreUpdate(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+            var entity = _context
+                .Genres
+                .Select(g => new AdminGenreEditViewModel
+                {
+                    GenreId = g.GenreId,
+                    Name = g.Name,
+                    Movies = g.Movies.Select(i => new AdminMovieViewModel
+                    {
+                        MovieId = i.MovieId,
+                        Title = i.Title,
+                        ImageUrl = i.ImageUrl,
 
-		//	[HttpPost]
-		//public IActionResult MovieCreate(Movie m, int[] genreIds)
-		//{
-		//if (ModelState.IsValid)
-		//{
-		//m.Genres = new List<Genre>();
-		//foreach(var id in genreIds)
-		//{
-		//	m.Genres.Add(_context.Genres.FirstOrDefault(i=> i.GenreId == id));	
-		//}
-		//_context.Movies.Add(m);
-		//_context.SaveChanges();
-		//return RedirectToAction("MovieList","Admin");
-		//}
-		//ViewBag.Genres = _context.Genres.ToList();
-		//return View();
-		//}
+                    }).ToList()
+                }).FirstOrDefault(g => g.GenreId == id);
+            if (entity == null)
+            {
+                return NotFound();
+            }
+            return View(entity);
+        }
 
-		[HttpPost]
-		public async Task<IActionResult> MovieCreate(AdminCreateMovieModel model, IFormFile file)
-		{
-			if (ModelState.IsValid)
-			{
-				var entity = new Movie
-				{
-					Title = model.Title,
-					Description = model.Description,
-					ImageUrl = "no-image.png"
-				};
+        [HttpPost]
+        public IActionResult GenreUpdate(AdminGenreEditViewModel model, int[] movieIds)
+        {
+            if (ModelState.IsValid)
+            {
 
-				if (file != null)
-				{
-					var extension = Path.GetExtension(file.FileName);
-					var fileName = string.Format($"{Guid.NewGuid()}{extension}");
-					var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\img", fileName);
-					entity.ImageUrl = fileName;
+                var entity = _context.Genres.Include("Movies").FirstOrDefault(i => i.GenreId == model.GenreId);
+                if (entity == null) { return NotFound(); }
+                entity.Name = model.Name;
+                foreach (var id in movieIds) { entity.Movies.Remove(entity.Movies.FirstOrDefault(m => m.MovieId == id)); }
+                _context.SaveChanges();
+                return RedirectToAction("GenreList");
+            }
+            return View(model);
+        }
 
-					using (var stream = new FileStream(path, FileMode.Create))
-					{
-						await file.CopyToAsync(stream);
-					}
-				}
+        [HttpPost]
+        public IActionResult GenreDelete(int genreId)
+        {
+            var entity = _context.Genres.Find(genreId);
+            if (entity != null)
+            {
+                _context.Genres.Remove(entity);
+                _context.SaveChanges();
+            }
+            return RedirectToAction("GenreList");
+        }
+        [HttpPost]
+        public IActionResult MovieDelete(int movieId)
+        {
+            var entity = _context.Movies.Find(movieId);
+            if (entity != null)
+            {
+                _context.Movies.Remove(entity);
+                _context.SaveChanges();
+            }
+            return RedirectToAction("MovieList");
+        }
 
-				// Movie ekle
-				_context.Movies.Add(entity);
-				await _context.SaveChangesAsync();
+        public IActionResult MovieCreate()
+        {
+            ViewBag.Genres = _context.Genres.ToList();
+            return View(new AdminCreateMovieModel());
+        }
 
-				// Genre'leri ekle
-				foreach (var id in model.GenreIds)
-				{
-					entity.Genres.Add(_context.Genres.FirstOrDefault(i => i.GenreId == id));
-				}
+        //	[HttpPost]
+        //public IActionResult MovieCreate(Movie m, int[] genreIds)
+        //{
+        //if (ModelState.IsValid)
+        //{
+        //m.Genres = new List<Genre>();
+        //foreach(var id in genreIds)
+        //{
+        //	m.Genres.Add(_context.Genres.FirstOrDefault(i=> i.GenreId == id));	
+        //}
+        //_context.Movies.Add(m);
+        //_context.SaveChanges();
+        //return RedirectToAction("MovieList","Admin");
+        //}
+        //ViewBag.Genres = _context.Genres.ToList();
+        //return View();
+        //}
 
-				// Yönetmen ekle
-				if (!string.IsNullOrEmpty(model.DirectorName))
-				{
-					var director = new Person { Name = model.DirectorName };
-					_context.People.Add(director);
-					await _context.SaveChangesAsync();
-					var crew = new Crew { MovieId = entity.MovieId, PersonId = director.PersonId, Job = "Director" };
-					_context.Crews.Add(crew);
-				}
+        [HttpPost]
+        public async Task<IActionResult> MovieCreate(AdminCreateMovieModel model, IFormFile file)
+        {
+            if (ModelState.IsValid)
+            {
+                var entity = new Movie
+                {
+                    Title = model.Title,
+                    Description = model.Description,
+                    ImageUrl = "no-image.png"
+                };
 
-				// Oyuncuları ekle
-				if (!string.IsNullOrEmpty(model.ActorNames))
-				{
-					var actorNames = model.ActorNames.Split(',').Select(name => name.Trim()).ToList();
-					foreach (var actorName in actorNames)
-					{
-						var actor = new Person { Name = actorName };
-						_context.People.Add(actor);
-						await _context.SaveChangesAsync();
-						var cast = new Cast { MovieId = entity.MovieId, PersonId = actor.PersonId, Name = actorName };
-						_context.Casts.Add(cast);
-					}
-				}
+                if (file != null)
+                {
+                    var extension = Path.GetExtension(file.FileName);
+                    var fileName = string.Format($"{Guid.NewGuid()}{extension}");
+                    var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\img", fileName);
+                    entity.ImageUrl = fileName;
 
-				await _context.SaveChangesAsync();
-				return RedirectToAction("MovieList", "Admin");
-			}
+                    using (var stream = new FileStream(path, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+                }
 
-			ViewBag.Genres = _context.Genres.ToList();
-			return View(model);
-		}
+                // Movie ekle
+                _context.Movies.Add(entity);
+                await _context.SaveChangesAsync();
+
+                // Genre'leri ekle
+                foreach (var id in model.GenreIds)
+                {
+                    entity.Genres.Add(_context.Genres.FirstOrDefault(i => i.GenreId == id));
+                }
+
+                // Yönetmen ekle
+                if (!string.IsNullOrEmpty(model.DirectorName))
+                {
+                    var director = new Person { Name = model.DirectorName };
+                    _context.People.Add(director);
+                    await _context.SaveChangesAsync();
+                    var crew = new Crew { MovieId = entity.MovieId, PersonId = director.PersonId, Job = "Director" };
+                    _context.Crews.Add(crew);
+                }
+
+                // Oyuncuları ekle
+                if (!string.IsNullOrEmpty(model.ActorNames))
+                {
+                    var actorNames = model.ActorNames.Split(',').Select(name => name.Trim()).ToList();
+                    foreach (var actorName in actorNames)
+                    {
+                        var actor = new Person { Name = actorName };
+                        _context.People.Add(actor);
+                        await _context.SaveChangesAsync();
+                        var cast = new Cast { MovieId = entity.MovieId, PersonId = actor.PersonId, Name = actorName };
+                        _context.Casts.Add(cast);
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+                return RedirectToAction("MovieList", "Admin");
+            }
+
+            ViewBag.Genres = _context.Genres.ToList();
+            return View(model);
+        }
 
 
 
 
-	}
+    }
 }

@@ -13,10 +13,11 @@ using System.Threading.Tasks;
 
 namespace movieApp.web.Controllers
 {
+
     public class MoviesController : Controller
     {
         private readonly MovieContext _context;
-        public MoviesController(MovieContext context) 
+        public MoviesController(MovieContext context)
         {
             _context = context;
         }
@@ -28,13 +29,13 @@ namespace movieApp.web.Controllers
         //action
         // localhost:504040/movies/list/1
         [HttpGet]
-        public IActionResult List(int? id,string q)
+        public IActionResult List(int? id, string q)
         {
             //var movies = MovieRepository.Movies;
-            var movies= _context.Movies.AsQueryable();
+            var movies = _context.Movies.AsQueryable();
             if (id != null)
-            { 
-                movies = movies.Include(m=>m.Genres).Where(m => m.Genres.Any(g=>g.GenreId==id));
+            {
+                movies = movies.Include(m => m.Genres).Where(m => m.Genres.Any(g => g.GenreId == id));
             }
 
             if (string.IsNullOrEmpty(q) || movies == null)
@@ -52,7 +53,7 @@ namespace movieApp.web.Controllers
                 Movies = movies.ToList()
             };
 
-            return View("movies",model);
+            return View("movies", model);
         }
 
         // [HttpGet]

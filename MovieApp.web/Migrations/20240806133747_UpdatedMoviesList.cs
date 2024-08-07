@@ -2,7 +2,7 @@
 
 namespace movieApp.web.Migrations
 {
-    public partial class RemoveUserTable : Migration
+    public partial class UpdatedMoviesList : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -6,6 +7,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using movieApp.web.Data;
+using movieApp.web.Middleware;
+using movieApp.web.Services;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -17,7 +20,7 @@ namespace movieApp.web
     public class Startup
     {
         public IConfiguration Configuration { get; }
-        public Startup (IConfiguration configuration)
+        public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
@@ -26,9 +29,27 @@ namespace movieApp.web
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<MovieContext>(options =>
-			options.UseSqlServer(Configuration.GetConnectionString("MsSQLConnection")));
-			//  options.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
-			services.AddControllersWithViews();
+            options.UseSqlServer(Configuration.GetConnectionString("MsSQLConnection")));
+            //  options.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddControllersWithViews();
+
+            services.AddScoped<IAdminService, AdminService>();
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options =>
+                {
+                    options.LoginPath = "/Account/Login";
+                    options.AccessDeniedPath = "/Account/Login";
+                    options.SlidingExpiration = false; // Çerez süresi yenilenmez
+                    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                    options.Cookie.HttpOnly = true;
+                    options.Cookie.IsEssential = true;
+                    options.Cookie.MaxAge = null;
+                });
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"));
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -39,17 +60,28 @@ namespace movieApp.web
                 app.UseDeveloperExceptionPage();
                 DataSeeding.seed(app);
             }
+            else
+            {
+                app.UseExceptionHandler("/Home/Error");
+                app.UseHsts();
+            }
 
+            app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             app.UseRouting();
+
+            app.UseAuthentication();
+            app.UseAuthorization();
+            app.UseMiddleware<AdminAuthMiddleware>();
+
 
             app.UseEndpoints(endpoints =>
             {
 
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}" 
+                    pattern: "{controller=Home}/{action=Index}/{id?}"
                     );
             });
         }

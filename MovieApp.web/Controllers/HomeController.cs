@@ -9,7 +9,7 @@ namespace movieApp.web.Controllers
     public class HomeController : Controller
     {
         private readonly MovieContext _context;
-        public HomeController (MovieContext context)
+        public HomeController(MovieContext context)
         {
             _context = context;
         }
@@ -19,12 +19,12 @@ namespace movieApp.web.Controllers
             {
                 PopularMovies = _context.Movies.ToList()
             };
-            
+
             return View(model);
         }
         public IActionResult About()
         {
-           
+
             return View();
         }
     }

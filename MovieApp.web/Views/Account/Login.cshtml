@@ -1,0 +1,24 @@
+﻿@{
+    ViewData["Title"] = "Admin Girişi";
+}
+
+<h2 class="text-center mt-4">@ViewData["Title"]</h2>
+
+<div class="container mt-5">
+    <form asp-action="Login" method="post" class="w-50 mx-auto">
+        <div class="form-group">
+            <label for="username">Kullanıcı Adı</label>
+            <input type="text" class="form-control" id="username" name="username" required />
+        </div>
+        <div class="form-group mt-3">
+            <label for="password">Şifre</label>
+            <input type="password" class="form-control" id="password" name="password" required />
+        </div>
+        <button type="submit" class="btn btn-primary mt-4">Giriş</button>
+    </form>
+
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <p class="text-danger text-center mt-3">@ViewBag.ErrorMessage</p>
+    }
+</div>

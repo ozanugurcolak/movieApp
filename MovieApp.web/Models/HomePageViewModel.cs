@@ -6,7 +6,7 @@ namespace movieApp.web.Models
     public class HomePageViewModel
     {
 
-        public List<Movie> PopularMovies { get; set; } 
+        public List<Movie> PopularMovies { get; set; }
 
     }
 }

@@ -9,8 +9,8 @@ using movieApp.web.Data;
 namespace movieApp.web.Migrations
 {
     [DbContext(typeof(MovieContext))]
-    [Migration("20240805133009_RemoveUserTable")]
-    partial class RemoveUserTable
+    [Migration("20240806133747_UpdatedMoviesList")]
+    partial class UpdatedMoviesList
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
