@@ -1,0 +1,17 @@
+﻿@model List<movieApp.web.Models.WatchlistModel>
+
+<h2>İzleme Listem</h2>
+
+@if (Model.Any())
+{
+    <ul>
+        @foreach (var movie in Model)
+        {
+            <li>@movie.Title</li>
+        }
+    </ul>
+}
+else
+{
+    <p>İzleme listenizde henüz film yok.</p>
+}

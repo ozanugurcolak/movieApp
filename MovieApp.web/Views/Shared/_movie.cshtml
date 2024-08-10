@@ -11,6 +11,11 @@
                <div>
                    <a class="btn btn-primary" asp-controller="Movies" asp-action="Details" asp-route-id="@Model.MovieId">Detaylar</a>
                     
+                    <form asp-action="AddToWatchlist" asp-controller="UserAccount" method="post" style="display:inline;">
+                        <input type="hidden" name="movieId" value="@Model.MovieId" />
+                        <button type="submit" class="btn btn-secondary">İzleme Listeme Ekle</button>
+                    </form>
+                    
                    <form asp-controller="Movies" asp-action="Delete" method="post" style="display:inline;">
                        <input type="Hidden" name="Title" value="@Model.Title" />
                        <input type="Hidden" name="MovieId" value="@Model.MovieId" />

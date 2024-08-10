@@ -22,7 +22,7 @@ namespace movieApp.web.Controllers
     public class AdminController : Controller
     {
         private readonly MovieContext _context;
-        public AdminController(MovieContext context)
+        public AdminController(MovieContext context)  
         {
             _context = context;
         }

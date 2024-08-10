@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using movieApp.web.Entity;
+using movieApp.web.Entity;
 using movieApp.web.Models;
 
 namespace movieApp.web.Data
@@ -17,6 +18,9 @@ namespace movieApp.web.Data
         public DbSet<Crew> Crews { get; set; }
         public DbSet<Cast> Casts { get; set; }
         public DbSet<Admin> Admins { get; set; }  // Yeni eklendi
+        public DbSet<User> Users { get; set; }
+        public DbSet<Watchlist> Watchlists { get; set; }
+
 
 
 

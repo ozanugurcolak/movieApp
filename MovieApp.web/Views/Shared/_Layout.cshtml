@@ -1,5 +1,4 @@
 ﻿<!DOCTYPE html>
-
 <html>
 <head>
     <meta name="viewport" content="width=device-width" />
@@ -10,17 +9,15 @@
 <body>
     @RenderSection("message", false)
     @await Html.PartialAsync("_navbar")
-    @RenderSection("header",false)
+    @RenderSection("header", false)
     <div class="container mt-3">
-
         @if (IsSectionDefined("menu"))
         {
             <div class="row">
                 <div class="col-md-3">
-                    @RenderSection("menu",false)
+                    @RenderSection("menu", false)
                 </div>
                 <div class="col-md-9">
-                    @RenderBody()
                     @RenderBody()
                 </div>
             </div>
@@ -32,9 +29,7 @@
                     @RenderBody()
                 </div>
             </div>
-
         }
-
     </div>
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
