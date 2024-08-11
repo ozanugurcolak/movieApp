@@ -1,15 +1,17 @@
-﻿@model List<movieApp.web.Models.WatchlistModel>
+﻿@model List<movieApp.web.Entity.Movie>
 
 <h2>İzleme Listem</h2>
 
 @if (Model.Any())
 {
-    <ul>
+    <div class="row">
         @foreach (var movie in Model)
         {
-            <li>@movie.Title</li>
+            <div class="col-md-4">
+                @await Html.PartialAsync("_MovieCard", movie)
+            </div>
         }
-    </ul>
+    </div>
 }
 else
 {

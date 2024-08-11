@@ -8,23 +8,84 @@
         <div class="col-md-9">
             <div class="card-body">
                 <h5 class="card-title">@Model.Title</h5>
-               <div>
-                   <a class="btn btn-primary" asp-controller="Movies" asp-action="Details" asp-route-id="@Model.MovieId">Detaylar</a>
-                    
+                <div>
+                    <a class="btn btn-primary" asp-controller="Movies" asp-action="Details" asp-route-id="@Model.MovieId">Detaylar</a>
+
                     <form asp-action="AddToWatchlist" asp-controller="UserAccount" method="post" style="display:inline;">
                         <input type="hidden" name="movieId" value="@Model.MovieId" />
                         <button type="submit" class="btn btn-secondary">İzleme Listeme Ekle</button>
                     </form>
-                    
-                   <form asp-controller="Movies" asp-action="Delete" method="post" style="display:inline;">
-                       <input type="Hidden" name="Title" value="@Model.Title" />
-                       <input type="Hidden" name="MovieId" value="@Model.MovieId" />
 
-                   </form>
-
-               </div>
-                 
-           </div>
+                    <form asp-controller="Movies" asp-action="Delete" method="post" style="display:inline;">
+                        <input type="hidden" name="Title" value="@Model.Title" />
+                        <input type="hidden" name="MovieId" value="@Model.MovieId" />
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
-</div> 
+</div>
+
+<!-- Özelleştirilmiş Pop-up HTML -->
+<div id="customPopup" class="custom-popup">
+    <div class="custom-popup-content">
+        <span id="popupClose" class="custom-popup-close">&times;</span>
+        <p id="popupMessage">Film başarılı bir şekilde izleme listesine eklendi.</p>
+    </div>
+</div>
+
+<!-- Özelleştirilmiş Pop-up CSS ve JavaScript -->
+<style>
+    .custom-popup {
+        display: none;
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .custom-popup-content {
+        background: white;
+        padding: 20px;
+        border-radius: 5px;
+        text-align: center;
+        position: relative;
+    }
+
+    .custom-popup-close {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 24px;
+        cursor: pointer;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var successMessage = '@TempData["SuccessMessage"]';
+        if (successMessage) {
+            var popup = document.getElementById('customPopup');
+            var popupMessage = document.getElementById('popupMessage');
+            var popupClose = document.getElementById('popupClose');
+
+            popupMessage.innerHTML = successMessage; // HTML karakter kodlarını çözümleme
+            popup.style.display = 'flex';
+
+            popupClose.onclick = function () {
+                popup.style.display = 'none';
+            }
+
+            window.onclick = function (event) {
+                if (event.target === popup) {
+                    popup.style.display = 'none';
+                }
+            }
+        }
+    });
+</script>

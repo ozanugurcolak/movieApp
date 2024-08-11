@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace movieApp.web.Controllers
 {
@@ -129,7 +130,10 @@ namespace movieApp.web.Controllers
             _context.Watchlists.Add(watchlistEntry);
             _context.SaveChanges();
 
-            return RedirectToAction("Account");
+            TempData["SuccessMessage"] = HttpUtility.HtmlEncode("Film başarılı bir şekilde izleme listesine eklendi.");
+
+
+            return RedirectToAction("List","Movies");
         }
 
         // İzleme Listesini Görüntüleme
@@ -150,6 +154,28 @@ namespace movieApp.web.Controllers
                                     .ToList();
 
             return View(watchlist);
+        }
+        [HttpPost]
+        public IActionResult RemoveFromWatchlist(int movieId)
+        {
+            var username = User.Identity.Name;
+            var user = _context.Users.FirstOrDefault(u => u.Username == username);
+
+            if (user == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            var watchlistEntry = _context.Watchlists
+                                         .FirstOrDefault(w => w.UserId == user.UserId && w.MovieId == movieId);
+
+            if (watchlistEntry != null)
+            {
+                _context.Watchlists.Remove(watchlistEntry);
+                _context.SaveChanges();
+            }
+
+            return RedirectToAction("Watchlist");
         }
     }
 }

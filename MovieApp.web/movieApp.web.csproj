@@ -5,14 +5,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="Views\Shared\_MovieCard.cshtml" />
     <Content Remove="wwwroot\js\JavaScript.js" />
   </ItemGroup>
 
   <ItemGroup>
+    <_ContentIncludedByDefault Remove="Views\Shared\_MovieCard.cshtml" />
     <_ContentIncludedByDefault Remove="wwwroot\js\JavaScript.js" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="Views\UserAccount\_MovieCard.cshtml" />
     <None Include="wwwroot\js\JavaScript.js" />
   </ItemGroup>
 
@@ -28,6 +31,10 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Views\Shared\_MovieCard.cshtml" />
   </ItemGroup>
 
 </Project>
