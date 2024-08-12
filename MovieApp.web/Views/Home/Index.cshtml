@@ -1,18 +1,60 @@
 ﻿@model HomePageViewModel
 
-@section header{
-    @await Html.PartialAsync("_header")    
-}
-@section scripts{
-    <script src="~/js/JavaScript.js"></script>
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ana Sayfa</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .alert-popup {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1050;
+            width: 300px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    @section header{
+        @await Html.PartialAsync("_header")    
+    }
 
-        <h1>Film Listesi</h1>
-        <div id="filmler">
+    <!-- Popup Mesajı -->
+    <div id="alertPopup" class="alert alert-success alert-popup" role="alert">
+        <span id="alertMessage"></span>
+    </div>
 
-            @foreach(var movie in Model.PopularMovies)
-            {
-                @await Html.PartialAsync("_movie", movie)
-            }
+    <h1>Film Listesi</h1>
+    <div id="filmler">
+        @foreach(var movie in Model.PopularMovies)
+        {
+            @await Html.PartialAsync("_movie", movie)
+        }
+    </div>
 
-        </div>
+    @section scripts{
+        <script src="~/js/JavaScript.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var alertPopup = document.getElementById('alertPopup');
+                var alertMessage = document.getElementById('alertMessage');
+
+                var successMessage = '@Html.Raw(TempData["SuccessMessage"])';
+
+                if (successMessage) {
+                    alertMessage.innerHTML = successMessage; 
+                    alertPopup.style.display = 'block';
+
+                    setTimeout(function () {
+                        alertPopup.style.display = 'none';
+                    }, 5000);
+                }
+            });
+        </script>
+    }
+</body>
+</html>

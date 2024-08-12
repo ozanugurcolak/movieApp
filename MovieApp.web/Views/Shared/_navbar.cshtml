@@ -14,7 +14,7 @@
                     <a href="/admin/moviecreate" class="nav-link">Film Ekle</a>
                 </li>
                 <li class="nav-item">
-                    <a href="/admin/movielist" class="nav-link">Admin Filmler</a>
+                    <a href="/admin/movielist" class="nav-link">Film Düzenle</a>
                 </li>
                 <li class="nav-item">
                     <a href="/admin/genrelist" class="nav-link">Film Türleri</a>
@@ -28,14 +28,12 @@
 
             @if (User.Identity.IsAuthenticated)
             {
-                <!-- Oturum açılmışsa "Hesabım" butonu ve "Çıkış Yap" butonu görünür -->
                 <a href="/UserAccount/Account" class="btn btn-outline-light ms-2">Hesabım</a>
                 <a href="/UserAccount/Watchlist" class="btn btn-outline-light ms-2">İzleme Listem</a>
                 <a href="/UserAccount/Logout" class="btn btn-outline-light ms-2">Çıkış Yap</a>
             }
             else
             {
-                <!-- Oturum açılmamışsa "Giriş Yap" butonu görünür -->
                 <a href="@Url.Action("Login", "UserAccount")" class="btn btn-outline-light ms-2">Giriş Yap</a>
             }
         </div>

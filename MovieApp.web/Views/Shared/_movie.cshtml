@@ -13,7 +13,7 @@
 
                     <form asp-action="AddToWatchlist" asp-controller="UserAccount" method="post" style="display:inline;">
                         <input type="hidden" name="movieId" value="@Model.MovieId" />
-                        <button type="submit" class="btn btn-secondary">İzleme Listeme Ekle</button>
+                        <button type="submit" class="btn btn-danger">İzleme Listeme Ekle</button>
                     </form>
 
                     <form asp-controller="Movies" asp-action="Delete" method="post" style="display:inline;">
@@ -26,7 +26,6 @@
     </div>
 </div>
 
-<!-- Özelleştirilmiş Pop-up HTML -->
 <div id="customPopup" class="custom-popup">
     <div class="custom-popup-content">
         <span id="popupClose" class="custom-popup-close">&times;</span>
@@ -34,7 +33,6 @@
     </div>
 </div>
 
-<!-- Özelleştirilmiş Pop-up CSS ve JavaScript -->
 <style>
     .custom-popup {
         display: none;
@@ -74,7 +72,7 @@
             var popupMessage = document.getElementById('popupMessage');
             var popupClose = document.getElementById('popupClose');
 
-            popupMessage.innerHTML = successMessage; // HTML karakter kodlarını çözümleme
+            popupMessage.innerHTML = successMessage; 
             popup.style.display = 'flex';
 
             popupClose.onclick = function () {

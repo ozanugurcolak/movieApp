@@ -79,9 +79,9 @@ namespace movieApp.web.Controllers
             var entity = _context.Movies
                 .Include(m => m.Genres)
                 .Include(m => m.Casts)
-                .ThenInclude(c => c.Person) // Person nesnelerini de dahil ediyoruz
+                .ThenInclude(c => c.Person) 
                 .Include(m => m.Crews)
-                .ThenInclude(c => c.Person) // Person nesnelerini de dahil ediyoruz
+                .ThenInclude(c => c.Person) 
                 .FirstOrDefault(m => m.MovieId == id);
 
             if (entity == null)
@@ -95,11 +95,11 @@ namespace movieApp.web.Controllers
                 Title = entity.Title,
                 Description = entity.Description,
                 ImageUrl = entity.ImageUrl,
-                GenreIds = entity.Genres?.Select(i => i.GenreId).ToArray() ?? new int[0], // Null check
+                GenreIds = entity.Genres?.Select(i => i.GenreId).ToArray() ?? new int[0],
                 Genres = _context.Genres.ToList(),
-                Casts = entity.Casts?.ToList() ?? new List<Cast>(), // Null check
-                Crews = entity.Crews?.ToList() ?? new List<Crew>(), // Null check
-                DirectorName = entity.Crews?.FirstOrDefault(c => c.Job == "Director")?.Person?.Name, // Null check
+                Casts = entity.Casts?.ToList() ?? new List<Cast>(), 
+                Crews = entity.Crews?.ToList() ?? new List<Crew>(), 
+                DirectorName = entity.Crews?.FirstOrDefault(c => c.Job == "Director")?.Person?.Name, 
                 ActorNames = entity.Casts != null ? string.Join(", ", entity.Casts.Where(c => c.Person != null).Select(c => c.Person.Name)) : string.Empty // Null check
             };
 
@@ -144,7 +144,7 @@ namespace movieApp.web.Controllers
 
                 entity.Genres = genreIds.Select(id => _context.Genres.FirstOrDefault(i => i.GenreId == id)).ToList();
 
-                // Yönetmen ve oyuncuları güncelle
+                // Yönetmen ve oyuncuları güncelleme
                 if (!string.IsNullOrEmpty(model.DirectorName))
                 {
                     var director = _context.People.FirstOrDefault(p => p.Name == model.DirectorName);
@@ -360,11 +360,11 @@ namespace movieApp.web.Controllers
                     }
                 }
 
-                // Movie ekle
+                // film ekle
                 _context.Movies.Add(entity);
                 await _context.SaveChangesAsync();
 
-                // Genre'leri ekle
+                // tür ekle
                 foreach (var id in model.GenreIds)
                 {
                     entity.Genres.Add(_context.Genres.FirstOrDefault(i => i.GenreId == id));

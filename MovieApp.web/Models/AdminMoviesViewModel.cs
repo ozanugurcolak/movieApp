@@ -19,6 +19,8 @@ namespace movieApp.web.Models
         public List<Crew> Crews { get; set; }
         public Person Director { get; set; } // Yönetmen bilgisi
         public List<Person> Actors { get; set; } // Oyuncular bilgisi
+        public double AverageRating { get; set; } // Yeni alan
+
     }
     public class AdminCreateMovieModel
     {

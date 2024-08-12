@@ -10,15 +10,17 @@
         <div class="col-md-6">
             <div class="card" style="width: 100%;">
                 <div class="card-body text-center">
-                    <!-- Profil Fotoğrafı -->
                     <img src="/img/userPhoto.jpeg" class="rounded-circle mb-3" alt="Profil Fotoğrafı" style="width: 150px; height: 150px; object-fit: cover;" />
 
-                    <!-- Kullanıcı Bilgileri -->
                     <h5 class="card-title">@Model.Username</h5>
                     <p class="card-text"><strong>Email:</strong> @Model.Email</p>
 
-                    <!-- Çıkış Yap Butonu -->
                     <a href="@Url.Action("Logout", "UserAccount")" class="btn btn-primary mt-3">Çıkış Yap</a>
+
+                    <form asp-action="DeleteAccount" method="post" style="margin-top: 20px;">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-danger">Hesabımı Sil</button>
+                    </form>
                 </div>
             </div>
         </div>

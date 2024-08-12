@@ -10,7 +10,7 @@
         <input name="password" type="password" class="form-control" />
     </div>
     <button type="submit" class="btn btn-primary">Giriş Yap</button>
-    <button type="button" class="btn btn-secondary" onclick="window.location.href='@Url.Action("Register", "UserAccount")'">Kaydol</button>
+    <button type="button" class="btn btn-danger" onclick="window.location.href='@Url.Action("Register", "UserAccount")'">Kaydol</button>
 </form>
 
 @if (ViewBag.ErrorMessage != null)

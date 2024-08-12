@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using movieApp.web.Entity;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace movieApp.web.Models
 {
@@ -17,5 +19,7 @@ namespace movieApp.web.Models
         [Required]
         [DataType(DataType.EmailAddress)]
         public string Email { get; set; }
+        public ICollection<Rating> Ratings { get; set; } = new List<Rating>();
+
     }
 }

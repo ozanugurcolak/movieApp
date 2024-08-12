@@ -20,14 +20,13 @@ namespace movieApp.web.Data
         public DbSet<Admin> Admins { get; set; }  // Yeni eklendi
         public DbSet<User> Users { get; set; }
         public DbSet<Watchlist> Watchlists { get; set; }
+        public DbSet<Rating> Ratings { get; set; }
 
 
 
 
-        //protected override void onconfiguring(dbcontextoptionsbuilder optionsbuilder)
-        //{
-        //	optionsbuilder.usesqlite("data source=movies.db");
-        //}
+
+   
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Movie>().Property(b => b.Title).IsRequired();
@@ -35,6 +34,25 @@ namespace movieApp.web.Data
 
             modelBuilder.Entity<Genre>().Property(b => b.Name).IsRequired();
             modelBuilder.Entity<Genre>().Property(b => b.Name).HasMaxLength(50);
+
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Rating>()
+                .HasKey(r => r.RatingId);
+
+            modelBuilder.Entity<Rating>()
+                .HasOne(r => r.Movie)
+                .WithMany(m => m.Ratings)
+                .HasForeignKey(r => r.MovieId);
+
+            modelBuilder.Entity<Rating>()
+                .HasOne(r => r.User)
+                .WithMany(u => u.Ratings)
+                .HasForeignKey(r => r.UserId);
+
+            modelBuilder.Entity<Rating>()
+                .Property(r => r.RatingId)
+                .ValueGeneratedOnAdd();
 
         }
     }

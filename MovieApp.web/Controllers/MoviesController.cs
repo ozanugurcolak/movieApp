@@ -7,6 +7,7 @@ using movieApp.web.Data;
 using movieApp.web.Entity;
 using movieApp.web.Models;
 using SQLitePCL;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -26,12 +27,10 @@ namespace movieApp.web.Controllers
         {
             return View();
         }
-        //action
-        // localhost:504040/movies/list/1
+       
         [HttpGet]
         public IActionResult List(int? id, string q)
         {
-            //var movies = MovieRepository.Movies;
             var movies = _context.Movies.AsQueryable();
             if (id != null)
             {
@@ -56,11 +55,7 @@ namespace movieApp.web.Controllers
             return View("movies", model);
         }
 
-        // [HttpGet]
-        // public IActionResult Details(int id) 
-        //{
-        //   return View(_context.Movies.Find(id));
-        //}
+     
 
         public async Task<IActionResult> Details(int id)
         {
@@ -69,6 +64,7 @@ namespace movieApp.web.Controllers
                 .ThenInclude(c => c.Person)
                 .Include(m => m.Crews)
                 .ThenInclude(c => c.Person)
+                .Include(m => m.Ratings) 
                 .FirstOrDefaultAsync(m => m.MovieId == id);
 
             if (movie == null)
@@ -76,17 +72,63 @@ namespace movieApp.web.Controllers
                 return NotFound();
             }
 
+            var averageRating = movie.Ratings.Any()
+                ? movie.Ratings.Average(r => r.Score)
+                : (double?)null;
+
             var viewModel = new AdminMovieViewModel
             {
                 Movie = movie,
                 Casts = movie.Casts.ToList(),
-                Crews = movie.Crews.ToList()
+                Crews = movie.Crews.ToList(),
+                AverageRating = averageRating ?? 0.0
             };
 
             return View(viewModel);
         }
 
 
+
+        [HttpPost]
+        public IActionResult RateMovie(int movieId, int score)
+        {
+            
+            var username = User.Identity.Name;
+            var user = _context.Users.FirstOrDefault(u => u.Username == username);
+
+            if (user == null)
+            {
+                return RedirectToAction("Login", "UserAccount");
+            }
+
+            // puanlama kontrol
+            var existingRating = _context.Ratings.FirstOrDefault(r => r.MovieId == movieId && r.UserId == user.UserId);
+
+            if (existingRating != null)
+            {
+                // Mevcut puanı güncelle
+                existingRating.Score = score;
+            }
+            else
+            {
+                // Yeni bir puanlama ekle
+                var newRating = new Rating
+                {
+                    MovieId = movieId,
+                    UserId = user.UserId,
+                    Score = score,
+                };
+                _context.Ratings.Add(newRating);
+            }
+
+            _context.SaveChanges();
+
+            // Ortalama hesaplama
+            var averageRating = _context.Ratings.Where(r => r.MovieId == movieId).Average(r => r.Score);
+            ViewBag.AverageRating = averageRating;
+
+            return RedirectToAction("Details", new { id = movieId });
+        }
 
     }
 }

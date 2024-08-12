@@ -1,4 +1,4 @@
-﻿    @model movieApp.web.Models.AdminMovieViewModel
+﻿@model movieApp.web.Models.AdminMovieViewModel
 
 <!DOCTYPE html>
 <html lang="en">
@@ -45,6 +45,10 @@
             ul li {
                 margin-bottom: 5px;
             }
+
+        .rating-form {
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -61,7 +65,7 @@
                     <ul>
                         @foreach (var cast in Model.Casts)
                         {
-                            <li>@cast.Name </li>
+                            <li>@cast.Name</li>
                         }
                     </ul>
                     <h6>Yönetmenler:</h6>
@@ -71,6 +75,27 @@
                             <li>@crew.Person.Name</li>
                         }
                     </ul>
+                    <h6>Ortalama Puan:</h6>
+                    <p>@Model.AverageRating.ToString("0.0")</p>
+
+                    @* Puan verme formunu ekleyelim *@
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <div class="rating-form">
+                            <h6>Puanınızı Girin (1-10):</h6>
+                            <form asp-action="RateMovie" method="post">
+                                <input type="hidden" name="movieId" value="@Model.Movie.MovieId" />
+                                <div class="form-group">
+                                    <input type="number" id="score" name="score" class="form-control" min="1" max="10" required />
+                                </div>
+                                <button type="submit" class="btn btn-primary">Puan Ver</button>
+                            </form>
+                        </div>
+                    }
+                    else
+                    {
+                        <p>Lütfen puan verebilmek için giriş yapın.</p>
+                    }
                 </div>
             </div>
         </div>

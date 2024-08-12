@@ -20,18 +20,15 @@ namespace movieApp.web.Controllers
             _context = context;
         }
 
-        // GET: /Account/Register
         [HttpGet]
         public IActionResult Register()
         {
             return View();
         }
 
-        // POST: /Account/Register
         [HttpPost]
         public IActionResult Register(User user)
         {
-            // Kullanıcı adı veya email kontrolü
             var existingUser = _context.Users
                                        .FirstOrDefault(u => u.Username == user.Username || u.Email == user.Email);
 
@@ -47,7 +44,6 @@ namespace movieApp.web.Controllers
                     ModelState.AddModelError("Email", "Bu email adresi zaten kayıtlı.");
                 }
 
-                // Hataları kullanıcıya gösterin
                 return View(user);
             }
 
@@ -64,10 +60,9 @@ namespace movieApp.web.Controllers
         [HttpGet]
         public IActionResult Login()
         {
-            return View("UserLogin"); // UserLogin.cshtml dosyasını döndür
+            return View("UserLogin"); 
         }
 
-        // POST: /UserAccount/Login
         [HttpPost]
         public async Task<IActionResult> Login(string username, string password)
         {
@@ -86,10 +81,9 @@ namespace movieApp.web.Controllers
             }
 
             ViewBag.ErrorMessage = "Geçersiz kullanıcı adı veya şifre.";
-            return View("UserLogin"); // Hatalı girişte UserLogin sayfasını döndür
+            return View("UserLogin"); 
         }
 
-        // GET: /Account/Logout
         public IActionResult Logout()
         {
             HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
@@ -136,7 +130,6 @@ namespace movieApp.web.Controllers
             return RedirectToAction("List","Movies");
         }
 
-        // İzleme Listesini Görüntüleme
         [HttpGet]
         public IActionResult Watchlist()
         {
@@ -177,5 +170,39 @@ namespace movieApp.web.Controllers
 
             return RedirectToAction("Watchlist");
         }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteAccount()
+        {
+            var username = User.Identity.Name;
+            var user = _context.Users.FirstOrDefault(u => u.Username == username);
+
+            if (user != null)
+            {
+                var watchlistEntries = _context.Watchlists.Where(w => w.UserId == user.UserId);
+                _context.Watchlists.RemoveRange(watchlistEntries);
+
+                var ratings = _context.Ratings.Where(r => r.UserId == user.UserId);
+                _context.Ratings.RemoveRange(ratings);
+
+                // Kullanıcıyı veritabanından sil
+                _context.Users.Remove(user);
+
+                await _context.SaveChangesAsync();
+
+                // Kullanıcıyı oturumdan çıkar
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+                // Başarı mesajını ayarla
+                TempData["SuccessMessage"] = "Hesabınız başarıyla silindi.";
+
+                // Ana sayfaya yönlendir
+                return RedirectToAction("Index", "Home");
+            }
+
+            return NotFound();
+        }
+
+
     }
 }

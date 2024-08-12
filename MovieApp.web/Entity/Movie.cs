@@ -20,5 +20,8 @@ namespace movieApp.web.Entity
         public List<Cast> Casts { get; set; }
         public List<Crew> Crews { get; set; }
         public List<Genre> Genres { get; set; }
+        public ICollection<Rating> Ratings { get; set; } = new List<Rating>();
+
+
     }
 }

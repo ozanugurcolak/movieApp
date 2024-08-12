@@ -25,4 +25,5 @@ namespace movieApp.web.Models
         public List<Movie> Movies { get; set; }
 
     }
+
 }
